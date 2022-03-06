@@ -1,3 +1,5 @@
+### Code by Technical Sid (https://technicalsid.com)
+
 from typing import List, Tuple
 import re
 import fitz
@@ -46,8 +48,30 @@ def handle_page(page):
         annot = annot.next
     return highlights
 
-# main function 
+# function to extract comments
+def extract_comments(doc):
+    comment_list = []
+    pno = ''
+    comment_colors = []
+    
+    for i in range(doc.pageCount):
+        page = doc[i]
+        for annot in page.annots():
+            comment_ = []
+            if annot.info["content"] != '':
+                pno = re.findall(r'^\D*(\d+)', str(page))
+                pno = ",".join(pno)
 
+                # comment_colors.append(annot.colors["stroke"])
+                comment_.append(annot.info["content"])
+                comment_.append(pno)
+                comment_.append(annot.colors["stroke"])
+
+                # comment_.append(annot.line_ends["xref"])
+                comment_list.append(comment_)
+                return comment_list
+            
+# main function            
 def main(filepath: str) -> List:
     doc = fitz.open(filepath)
 
@@ -57,12 +81,15 @@ def main(filepath: str) -> List:
         # highlights.append(handle_page(page))
 
         # print(page)
-
-    return highlights
+    comments = extract_comments(doc)
+    return highlights, comments
 
 #Extracting highlighted text by passing pdf file to main function
 
-highlight_list = main("antibiotic.pdf")
+highlight_list, comment_list = main("antibiotics_modified.pdf")
 
 #Printing highlighted text
 print(highlight_list)
+
+#printing comments text
+print(comment_list)
